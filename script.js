@@ -252,7 +252,7 @@ runCarousel();
 
 
 // ==========================================
-// V. SISTÈM RETRÈ PWOFESYONÈL (AVÈK DEDIKSYON)
+// V. SISTÈM RETRÈ V1 PWOFESYONÈL (AVÈK DEDIKSYON)
 // ==========================================
 
 // 1. FONKSYON POU LOUVRI MODAL KONFIMASYON
@@ -380,4 +380,3 @@ window.submitRetre = async () => {
         alert("⚠️ Gen yon pwoblèm koneksyon. Kòb la pa dedwi. Eseye ankò.");
     }
 };
-            

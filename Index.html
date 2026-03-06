@@ -146,7 +146,69 @@
                 </div>
             </section>
 
-            <section id="paj-retre" class="hidden"><h3 class="page-title">Retrè</h3></section>
+            <section id="paj-retre" class="hidden"><h3 class="page-title">Retrè</h3>
+
+                <section id="paj-retre">
+    <div class="form-container">
+        <div class="retre-banner-box">
+            <img src="https://i.postimg.cc/tTPghNYw/1772041853646-(1).png" style="width: 100%; border-radius: 15px;">
+        </div>
+
+        <div class="form-header" style="text-align: center; margin: 20px 0;">
+            <h3>Retire Lajan</h3>
+            <p style="font-size: 13px; color: #6b778c;">Lajan an ap rive nan 30 minit.</p>
+        </div>
+
+        <div class="form-group">
+            <label>Non sou kont lan</label>
+            <input type="text" id="retre-name" placeholder="Egz: Jean Bakèl">
+        </div>
+
+        <div class="form-group">
+            <label>Nimewo telefòn</label>
+            <input type="tel" id="retre-phone" placeholder="Egz: 47112233">
+        </div>
+
+        <div class="form-group">
+            <label>Metòd Transfè</label>
+            <select id="retre-method">
+                <option value="MonCash">MonCash</option>
+                <option value="NatCash">NatCash</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Montan (HTG)</label>
+            <input type="number" id="retre-amount" placeholder="Minimòm 100">
+        </div>
+
+        <button class="btn-primary-pro" onclick="openRetreConfirm()">KONFIME RETRÈ</button>
+    </div>
+</section>
+
+<div id="modal-confirm-retre" class="modal-overlay hidden">
+    <div class="modal-card">
+        <i class="fa-solid fa-circle-exclamation" style="font-size:40px; color:#ffab00;"></i>
+        <h3>Verifye Enfòmasyon</h3>
+        <div id="retre-preview-data" class="preview-box"></div>
+        <div style="display:flex; gap:10px;">
+            <button class="btn-cancel" onclick="closeRetreConfirm()">ANILE</button>
+            <button class="btn-confirm" onclick="submitRetre()">OK, VOYE L</button>
+        </div>
+    </div>
+</div>
+
+<div id="modal-success" class="modal-overlay hidden">
+    <div class="modal-card">
+        <script src="https://cdn.lordicon.com/lordicon.js"></script>
+        <lord-icon src="https://cdn.lordicon.com/lvrxlmju.json" trigger="loop" style="width:150px;height:150px"></lord-icon>
+        <h2 style="color: #36b37e;">Demann Voye!</h2>
+        <p>Retounen nan 5 segond...</p>
+    </div>
+    </div>
+    
+            
+            </section>
             <section id="paj-trans" class="hidden"><h3 class="page-title">Istorik</h3></section>
 
         </main>

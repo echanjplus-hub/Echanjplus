@@ -289,3 +289,160 @@ body {
     filter: brightness(0.95); /* Ti efè pou koulè yo parèt pi rich */
 }
 
+
+       /* ==========================================
+    RETRÈ ::STYLE BANK PWOFESYONÈL (ECHANJ PLUS)
+   ========================================== */
+
+:root {
+    --primary-blue: #0052cc;    /* Ble Bank (Trust) */
+    --dark-blue: #172b4d;       /* Tèks ak Tit */
+    --light-gray: #f4f5f7;      /* Background Paj */
+    --success-green: #36b37e;   /* Lordicon & Siksè */
+    --warning-orange: #ffab00;  /* Atansyon */
+    --white: #ffffff;
+}
+
+body {
+    background-color: var(--light-gray);
+    font-family: 'Inter', -apple-system, sans-serif;
+    margin: 0;
+    color: var(--dark-blue);
+}
+
+/* 1. Resipyan Fòm nan (Efè Kat Bank) */
+.form-container {
+    background: var(--white);
+    width: 92%;
+    max-width: 400px;
+    margin: 20px auto;
+    padding: 25px;
+    border-radius: 24px; /* Bordi pwofesyonèl */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); /* Lonbraj dou */
+    box-sizing: border-box;
+}
+
+/* 2. Banner Imaj la */
+.retre-banner-box img {
+    width: 100%;
+    border-radius: 16px;
+    object-fit: cover;
+    margin-bottom: 10px;
+}
+
+/* 3. Tcheke Chan yo (Inputs) */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text-soft);
+    text-transform: uppercase; /* Stil pwofesyonèl */
+    letter-spacing: 0.5px;
+}
+
+.form-group input, .form-group select {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1.5px solid #dfe1e6;
+    border-radius: 12px;
+    font-size: 16px;
+    color: var(--dark-blue);
+    background-color: #fafbfc;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.form-group input:focus {
+    border-color: var(--primary-blue);
+    background-color: var(--white);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 82, 204, 0.1);
+}
+
+/* 4. Bouton Prensipal la */
+.btn-primary-pro {
+    background: linear-gradient(135deg, var(--primary-blue) 0%, #0043a4 100%);
+    color: var(--white);
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0, 82, 204, 0.3);
+    transition: transform 0.2s ease;
+}
+
+.btn-primary-pro:active {
+    transform: scale(0.98); /* Efè lè w peze l */
+}
+
+/* 5. Modals (Fenèt k ap monte yo) */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(9, 30, 66, 0.8); /* Nwa transparan pro */
+    backdrop-filter: blur(5px); /* Efè flou iPhone */
+    display: flex; align-items: center; justify-content: center;
+    z-index: 10000;
+}
+
+.modal-card {
+    background: var(--white);
+    padding: 30px;
+    border-radius: 28px;
+    width: 88%;
+    max-width: 360px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+.preview-box {
+    background: #f4f5f7;
+    padding: 15px;
+    border-radius: 14px;
+    margin: 20px 0;
+    text-align: left;
+    border-left: 4px solid var(--primary-blue); /* Ti liy ble dekoratif */
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* Bouton nan Modals yo */
+.modal-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-cancel {
+    flex: 1;
+    background: #ebecf0;
+    border: none;
+    padding: 14px;
+    border-radius: 12px;
+    font-weight: 600;
+    color: #42526e;
+}
+
+.btn-confirm {
+    flex: 1;
+    background: var(--primary-blue);
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+/* Klas pou kache eleman */
+.hidden {
+    display: none !important;
+   }
+   

@@ -251,55 +251,22 @@ runCarousel();
 
 
 
-// ===================================
-// RETRÈ 
-// ===================================
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getDatabase, ref, set, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-// 1. Konfigirasyon Firebase ou a
-const firebaseConfig = {
-  apiKey: "AIzaSyB1VTPakleoggsbLdpm_HS7nSb3A7A99Qw",
-  authDomain: "echanj-plus-778cd.firebaseapp.com",
-  databaseURL: "https://echanj-plus-778cd-default-rtdb.firebaseio.com",
-  projectId: "echanj-plus-778cd",
-  storageBucket: "echanj-plus-778cd.firebasestorage.app",
-  messagingSenderId: "111144762929",
-  appId: "1:111144762929:web:e64ce9a6da65781c289f10",
-  measurementId: "G-J1BQRF32ZW"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getDatabase(app);
-
-let userData = null;
-
-// Tcheke si itilizatè a konekte epi rekipere balans li
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        onValue(ref(db, `users/${user.uid}`), (snap) => {
-            userData = snap.val();
-        });
-    }
-});
-
 // ==========================================
-// FONKSYON YO
+// V. SISTÈM RETRÈ (ADAPTE & PWÒP)
 // ==========================================
 
-// 1. LOUVRI MODAL KONFIMASYON
+// 1. LOUVRI MODAL KONFIMASYON RETRÈ
 window.openRetreConfirm = function() {
+    // Nou rekipere valè yo nan HTML ou a
     const non = document.getElementById('retre-name').value.trim();
     const tel = document.getElementById('retre-phone').value.trim();
     const metod = document.getElementById('retre-method').value;
-    const montan = parseFloat(document.getElementById('retre-amount').value);
+    const montanInput = document.getElementById('retre-amount').value;
+    const montan = parseFloat(montanInput);
 
-    // Verifikasyon debaz
-    if (!non || !tel || isNaN(montan)) {
-        alert("⚠️ Tanpri ranpli tout chan yo!");
+    // Verifikasyon sekirite
+    if (!non || !tel || !montanInput || isNaN(montan)) {
+        alert("⚠️ Tanpri ranpli tout chan yo kòrèkteman!");
         return;
     }
 
@@ -308,51 +275,63 @@ window.openRetreConfirm = function() {
         return;
     }
 
+    // Tcheke balans kliyan an nan userData (ki deja nan Global State la)
     if (userData && montan > userData.balance) {
-        alert("🚫 Balans ou pa ase pou retrè sa a.");
+        alert(`🚫 Balans ou pa ase! Ou gen sèlman ${userData.balance.toFixed(2)} HTG.`);
         return;
     }
 
-    // Afiche done nan ti fenèt preview a
+    // Afiche done yo nan preview modal la
     const preview = document.getElementById('retre-preview-data');
-    preview.innerHTML = `
-        <p><strong>Resevwa sou:</strong> ${metod}</p>
-        <p><strong>Nimewo:</strong> ${tel}</p>
-        <p><strong>Non:</strong> ${non}</p>
-        <p style="color:#0052cc; font-size:1.1rem;"><strong>Montan:</strong> ${montan.toFixed(2)} HTG</p>
-    `;
+    if (preview) {
+        preview.innerHTML = `
+            <div style="line-height: 1.8;">
+                <p><strong>Metòd:</strong> ${metod}</p>
+                <p><strong>Resevwa sou:</strong> ${tel}</p>
+                <p><strong>Non kont:</strong> ${non}</p>
+                <p style="color:#0052cc; font-size:1.1rem; border-top: 1px solid #ddd; padding-top:10px;">
+                    <strong>Montan:</strong> ${montan.toFixed(2)} HTG
+                </p>
+            </div>
+        `;
+    }
 
-    document.getElementById('modal-confirm-retre').classList.remove('hidden');
+    // Montre Modal la
+    const modalConfirm = document.getElementById('modal-confirm-retre');
+    if (modalConfirm) modalConfirm.classList.remove('hidden');
 };
 
 // 2. FÈMEN MODAL KONFIMASYON
 window.closeRetreConfirm = () => {
-    document.getElementById('modal-confirm-retre').classList.add('hidden');
+    const modalConfirm = document.getElementById('modal-confirm-retre');
+    if (modalConfirm) modalConfirm.classList.add('hidden');
 };
 
-// 3. VOYE DEMANN LAN NAN FIREBASE
+// 3. VOYE DEMANN RETRÈ A NAN FIREBASE
 window.submitRetre = async () => {
-    const non = document.getElementById('retre-name').value;
-    const tel = document.getElementById('retre-phone').value;
+    const non = document.getElementById('retre-name').value.trim();
+    const tel = document.getElementById('retre-phone').value.trim();
     const metod = document.getElementById('retre-method').value;
     const montan = parseFloat(document.getElementById('retre-amount').value);
 
-    // Kache modal konfimasyon an
-    closeRetreConfirm();
+    // Kache modal la touswit
+    window.closeRetreConfirm();
 
     try {
-        const transID = "RET-" + Date.now();
         const user = auth.currentUser;
-
         if (!user) {
-            alert("Ou dwe konekte pou fè retrè.");
+            alert("Seksyon ekspire. Tanpri rekonekte w.");
             return;
         }
 
-        // A. Anrejistre tranzaksyon an nan Firebase
+        // Kreye ID tranzaksyon inik
+        const transID = "RET-" + Date.now();
+
+        // ANREJISTRE NAN FIREBASE (Branch Transactions)
+        // Nou itilize varyab 'db' ki deja deklare nan tèt JS ou a
         await set(ref(db, `transactions/${transID}`), {
             uid: user.uid,
-            arsID: userData.arsID || "Pa gen ID",
+            arsID: userData.arsID || "N/A",
             fullname: userData.fullname || "Itilizatè",
             type: "Retrè",
             method: metod,
@@ -363,28 +342,31 @@ window.submitRetre = async () => {
             timestamp: serverTimestamp()
         });
 
-        // B. Montre Modal Siksè (Lordicon)
+        // MONTRE MODAL SIKSÈ (Lordicon)
         const successModal = document.getElementById('modal-success');
-        successModal.classList.remove('hidden');
+        if (successModal) {
+            successModal.classList.remove('hidden');
 
-        // C. Netwaye bwat yo
-        document.getElementById('retre-name').value = "";
-        document.getElementById('retre-phone').value = "";
-        document.getElementById('retre-amount').value = "";
+            // Netwaye fòm nan
+            document.getElementById('retre-name').value = "";
+            document.getElementById('retre-phone').value = "";
+            document.getElementById('retre-amount').value = "";
 
-        // D. Tann 5 segond epi tounen nan akey
-        setTimeout(() => {
-            successModal.classList.add('hidden');
-            // Si ou gen fonksyon showPage, nou rele l, sinon nou reload
-            if (typeof showPage === "function") {
-                showPage('paj-akey'); 
-            } else {
-                location.reload();
-            }
-        }, 5000);
+            // Tann 5 segond epi kache modal la + tounen nan akèy
+            setTimeout(() => {
+                successModal.classList.add('hidden');
+                // Rele fonksyon navigasyon ou a
+                if (typeof window.showPage === "function") {
+                    window.showPage('home-page'); // Adapté ak ID paj akèy ou a
+                } else {
+                    location.reload();
+                }
+            }, 5000);
+        }
 
     } catch (e) {
-        alert("Erè: " + e.message);
+        console.error("Erè Firebase:", e);
+        alert("Tranzaksyon an pa pase. Tcheke entènèt ou.");
     }
 };
-        
+    

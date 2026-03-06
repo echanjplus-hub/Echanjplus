@@ -380,3 +380,128 @@ window.submitRetre = async () => {
         alert("⚠️ Gen yon pwoblèm koneksyon. Kòb la pa dedwi. Eseye ankò.");
     }
 };
+
+
+
+// ==========================================
+// VI. GESTYON ISTORIK (REAL-TIME & FILTRE)
+// ==========================================
+
+// Inisyalize yon varyab global pou kenbe kopi tranzaksyon yo
+let cacheTransactions = [];
+
+/**
+ * 1. KOUTE TRANZAKSYON YO (Real-time)
+ * Fonksyon sa a ap mache depi kliyan an fin konekte
+ */
+window.setupHistoryListener = function(uid) {
+    console.log("Istorik ap chaje pou: " + uid);
+    const transRef = ref(db, 'transactions');
+
+    // onValue ap voye done yo chak fwa gen yon chanjman nan Firebase
+    onValue(transRef, (snapshot) => {
+        const data = snapshot.val();
+        cacheTransactions = []; // Vide ansyen lis la nan memwa
+
+        if (data) {
+            // Filtre tranzaksyon yo: Sèlman sa ki pou kliyan sa a
+            Object.keys(data).forEach(key => {
+                if (data[key].uid === uid) {
+                    cacheTransactions.push({
+                        id: key,
+                        ...data[key]
+                    });
+                }
+            });
+
+            // Triye yo: Pi nèf la anlè nèt (descending order)
+            cacheTransactions.sort((a, b) => {
+                const dateA = a.timestamp || 0;
+                const dateB = b.timestamp || 0;
+                return dateB - dateA;
+            });
+        }
+        
+        // Afiche tout tranzaksyon yo pa defo
+        renderHistoryList(cacheTransactions);
+    });
+};
+
+/**
+ * 2. DESINEN KAT TRANZAKSYON YO NAN HTML
+ */
+function renderHistoryList(list) {
+    const listContainer = document.getElementById('transaction-list');
+    if (!listContainer) return;
+
+    listContainer.innerHTML = ""; // Netwaye vye kat yo
+
+    if (list.length === 0) {
+        listContainer.innerHTML = `
+            <div class="no-data" style="text-align:center; padding:50px; color:#6b778c;">
+                <i class="fa-solid fa-clock-rotate-left" style="font-size:40px; opacity:0.2; margin-bottom:15px; display:block;"></i>
+                <p>Ou poko gen okenn aktivite sou kont ou.</p>
+            </div>`;
+        return;
+    }
+
+    list.forEach(tr => {
+        // Jesyon Status (pou badj la ka pran bèl koulè nan CSS)
+        const statusLabel = tr.status || "En attente";
+        const statusClass = statusLabel.toLowerCase().replace(/\s+/g, '-');
+        
+        // Jesyon Dat
+        const dateObj = tr.timestamp ? new Date(tr.timestamp) : new Date();
+        const datFoma = dateObj.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+
+        // Enjekte HTML kat la
+        listContainer.innerHTML += `
+            <div class="trans-card card-${tr.type || 'Echanj'}">
+                <div class="trans-info">
+                    <h4 style="margin:0; font-size:15px;">${tr.type || 'Echanj'}</h4>
+                    <span style="font-size:12px; color:#6b778c;">${datFoma} • ${tr.method || tr.rezo || 'Plus'}</span>
+                    <div style="margin-top:6px;">
+                        <span class="status-badge status-${statusClass}">${statusLabel}</span>
+                    </div>
+                </div>
+                <div class="trans-amount" style="text-align:right;">
+                    <span class="amount-val" style="display:block; font-weight:700; color:#0052cc;">
+                        ${(tr.amount || tr.montan || 0).toFixed(2)} HTG
+                    </span>
+                    <span style="font-size:9px; color:#c1c7d0; font-family:monospace;">ID: ${tr.id.substring(0,8)}</span>
+                </div>
+            </div>
+        `;
+    });
+}
+
+/**
+ * 3. LOJIK BOUTON FILTRE YO
+ * kategori: 'tout', 'Echanj', 'Retrè', 'Succès' (Peye), 'Anulé' (Echwe)
+ */
+window.filterHistory = function(kategori, btn) {
+    // A. Chanje koulè bouton an (UI)
+    const toutBouton = document.querySelectorAll('.tab-btn');
+    toutBouton.forEach(b => b.classList.remove('active'));
+    if(btn) btn.classList.add('active');
+
+    // B. Triye kopi lis la (Logic)
+    let lisFiltre = [];
+
+    if (kategori === 'tout') {
+        lisFiltre = cacheTransactions;
+    } 
+    else if (kategori === 'Succès') { // Sa se bouton "Peye" a
+        lisFiltre = cacheTransactions.filter(t => t.status === 'Succès' || t.status === 'Valide');
+    } 
+    else if (kategori === 'Anulé') { // Sa se bouton "Echwe" a
+        lisFiltre = cacheTransactions.filter(t => t.status === 'Anulé' || t.status === 'Echoué');
+    } 
+    else { // Filtre pa Tip: Echanj oswa Retrè
+        lisFiltre = cacheTransactions.filter(t => t.type === kategori);
+    }
+
+    // C. Afiche lis ki filtre a
+    renderHistoryList(lisFiltre);
+};
+            

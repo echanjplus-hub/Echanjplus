@@ -252,62 +252,66 @@ runCarousel();
 
 
 // ==========================================
-// V. SISTÈM RETRÈ (ADAPTE & PWÒP)
+// V. SISTÈM RETRÈ PWOFESYONÈL (AVÈK DEDIKSYON)
 // ==========================================
 
-// 1. LOUVRI MODAL KONFIMASYON RETRÈ
+// 1. FONKSYON POU LOUVRI MODAL KONFIMASYON
 window.openRetreConfirm = function() {
-    // Nou rekipere valè yo nan HTML ou a
     const non = document.getElementById('retre-name').value.trim();
     const tel = document.getElementById('retre-phone').value.trim();
     const metod = document.getElementById('retre-method').value;
     const montanInput = document.getElementById('retre-amount').value;
     const montan = parseFloat(montanInput);
 
-    // Verifikasyon sekirite
+    // Verifikasyon si bwat yo vid
     if (!non || !tel || !montanInput || isNaN(montan)) {
         alert("⚠️ Tanpri ranpli tout chan yo kòrèkteman!");
         return;
     }
 
+    // Verifikasyon montan minimòm
     if (montan < 100) {
         alert("❌ Minimòm retrè se 100 HTG.");
         return;
     }
 
-    // Tcheke balans kliyan an nan userData (ki deja nan Global State la)
-    if (userData && montan > userData.balance) {
-        alert(`🚫 Balans ou pa ase! Ou gen sèlman ${userData.balance.toFixed(2)} HTG.`);
+    // VERIFIKASYON BALANS (Lojik: Èske l gen ase kòb?)
+    if (userData) {
+        if (montan > userData.balance) {
+            alert(`🚫 Balans ou pa ase! \nOu gen: ${userData.balance.toFixed(2)} HTG \nOu bezwen: ${montan.toFixed(2)} HTG`);
+            return;
+        }
+    } else {
+        alert("⚠️ Done kont ou poko chaje. Tann yon segond.");
         return;
     }
 
-    // Afiche done yo nan preview modal la
+    // Ranpli ti bwat konfimasyon an (Preview)
     const preview = document.getElementById('retre-preview-data');
     if (preview) {
         preview.innerHTML = `
-            <div style="line-height: 1.8;">
+            <div style="font-size: 14px; color: #172b4d;">
                 <p><strong>Metòd:</strong> ${metod}</p>
                 <p><strong>Resevwa sou:</strong> ${tel}</p>
-                <p><strong>Non kont:</strong> ${non}</p>
-                <p style="color:#0052cc; font-size:1.1rem; border-top: 1px solid #ddd; padding-top:10px;">
-                    <strong>Montan:</strong> ${montan.toFixed(2)} HTG
+                <p><strong>Non:</strong> ${non}</p>
+                <p style="color:#0052cc; font-size:18px; margin-top:10px; border-top:1px solid #ddd; padding-top:10px;">
+                    <strong>W ap retire:</strong> ${montan.toFixed(2)} HTG
                 </p>
+                <p style="font-size:12px; color:#6b778c;">Balans apre retrè: ${(userData.balance - montan).toFixed(2)} HTG</p>
             </div>
         `;
     }
 
     // Montre Modal la
-    const modalConfirm = document.getElementById('modal-confirm-retre');
-    if (modalConfirm) modalConfirm.classList.remove('hidden');
+    document.getElementById('modal-confirm-retre').classList.remove('hidden');
 };
 
-// 2. FÈMEN MODAL KONFIMASYON
+// 2. FONKSYON POU FÈMEN MODAL KONFIMASYON (ANILE)
 window.closeRetreConfirm = () => {
-    const modalConfirm = document.getElementById('modal-confirm-retre');
-    if (modalConfirm) modalConfirm.classList.add('hidden');
+    document.getElementById('modal-confirm-retre').classList.add('hidden');
 };
 
-// 3. VOYE DEMANN RETRÈ A NAN FIREBASE
+// 3. FONKSYON FINAL: VOYE DEMANN LAN & REDI BALANS LAN
 window.submitRetre = async () => {
     const non = document.getElementById('retre-name').value.trim();
     const tel = document.getElementById('retre-phone').value.trim();
@@ -319,16 +323,17 @@ window.submitRetre = async () => {
 
     try {
         const user = auth.currentUser;
-        if (!user) {
-            alert("Seksyon ekspire. Tanpri rekonekte w.");
-            return;
-        }
+        if (!user || !userData) return;
 
-        // Kreye ID tranzaksyon inik
+        // KALKIL MATEMATIK (Egzanp: 250 - 150 = 100)
+        const nouvoBalans = userData.balance - montan;
+
+        // Kreye yon ID inik pou tranzaksyon an
         const transID = "RET-" + Date.now();
 
-        // ANREJISTRE NAN FIREBASE (Branch Transactions)
-        // Nou itilize varyab 'db' ki deja deklare nan tèt JS ou a
+        // --- OPERASYON FIREBASE ---
+        
+        // A. Anrejistre tranzaksyon retrè a nan branch 'transactions'
         await set(ref(db, `transactions/${transID}`), {
             uid: user.uid,
             arsID: userData.arsID || "N/A",
@@ -342,31 +347,37 @@ window.submitRetre = async () => {
             timestamp: serverTimestamp()
         });
 
-        // MONTRE MODAL SIKSÈ (Lordicon)
+        // B. Mete ajou Balans lan nan branch 'users' (Rediksyon)
+        await update(ref(db, `users/${user.uid}`), {
+            balance: nouvoBalans
+        });
+
+        // --- SIKSÈ VIZYÈL ---
+        
         const successModal = document.getElementById('modal-success');
         if (successModal) {
             successModal.classList.remove('hidden');
 
-            // Netwaye fòm nan
+            // Netwaye bwat yo nan fòm lan
             document.getElementById('retre-name').value = "";
             document.getElementById('retre-phone').value = "";
             document.getElementById('retre-amount').value = "";
 
-            // Tann 5 segond epi kache modal la + tounen nan akèy
+            // Tann 5 segond epi kache siksè a, epi tounen nan dashboard
             setTimeout(() => {
                 successModal.classList.add('hidden');
                 // Rele fonksyon navigasyon ou a
                 if (typeof window.showPage === "function") {
-                    window.showPage('home-page'); // Adapté ak ID paj akèy ou a
+                    window.showPage('home-page'); 
                 } else {
-                    location.reload();
+                    location.reload(); // Si showPage pa disponib
                 }
             }, 5000);
         }
 
     } catch (e) {
-        console.error("Erè Firebase:", e);
-        alert("Tranzaksyon an pa pase. Tcheke entènèt ou.");
+        console.error("Erè nan pwosesis retrè a:", e);
+        alert("⚠️ Gen yon pwoblèm koneksyon. Kòb la pa dedwi. Eseye ankò.");
     }
 };
-    
+            

@@ -248,3 +248,141 @@ function runCarousel() {
 
 // Lanse fonksyon an
 runCarousel();
+
+// ================================
+// Retrè 
+// ================================
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getDatabase, ref, set, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+// 1. Konfigirasyon Firebase ou a
+const firebaseConfig = {
+  apiKey: "AIzaSyB1VTPakleoggsbLdpm_HS7nSb3A7A99Qw",
+  authDomain: "echanj-plus-778cd.firebaseapp.com",
+  databaseURL: "https://echanj-plus-778cd-default-rtdb.firebaseio.com",
+  projectId: "echanj-plus-778cd",
+  storageBucket: "echanj-plus-778cd.firebasestorage.app",
+  messagingSenderId: "111144762929",
+  appId: "1:111144762929:web:e64ce9a6da65781c289f10",
+  measurementId: "G-J1BQRF32ZW"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+let userData = null;
+
+// Tcheke si itilizatè a konekte epi rekipere balans li
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        onValue(ref(db, `users/${user.uid}`), (snap) => {
+            userData = snap.val();
+        });
+    }
+});
+
+// ==========================================
+// FONKSYON YO
+// ==========================================
+
+// 1. LOUVRI MODAL KONFIMASYON
+window.openRetreConfirm = function() {
+    const non = document.getElementById('retre-name').value.trim();
+    const tel = document.getElementById('retre-phone').value.trim();
+    const metod = document.getElementById('retre-method').value;
+    const montan = parseFloat(document.getElementById('retre-amount').value);
+
+    // Verifikasyon debaz
+    if (!non || !tel || isNaN(montan)) {
+        alert("⚠️ Tanpri ranpli tout chan yo!");
+        return;
+    }
+
+    if (montan < 100) {
+        alert("❌ Minimòm retrè se 100 HTG.");
+        return;
+    }
+
+    if (userData && montan > userData.balance) {
+        alert("🚫 Balans ou pa ase pou retrè sa a.");
+        return;
+    }
+
+    // Afiche done nan ti fenèt preview a
+    const preview = document.getElementById('retre-preview-data');
+    preview.innerHTML = `
+        <p><strong>Resevwa sou:</strong> ${metod}</p>
+        <p><strong>Nimewo:</strong> ${tel}</p>
+        <p><strong>Non:</strong> ${non}</p>
+        <p style="color:#0052cc; font-size:1.1rem;"><strong>Montan:</strong> ${montan.toFixed(2)} HTG</p>
+    `;
+
+    document.getElementById('modal-confirm-retre').classList.remove('hidden');
+};
+
+// 2. FÈMEN MODAL KONFIMASYON
+window.closeRetreConfirm = () => {
+    document.getElementById('modal-confirm-retre').classList.add('hidden');
+};
+
+// 3. VOYE DEMANN LAN NAN FIREBASE
+window.submitRetre = async () => {
+    const non = document.getElementById('retre-name').value;
+    const tel = document.getElementById('retre-phone').value;
+    const metod = document.getElementById('retre-method').value;
+    const montan = parseFloat(document.getElementById('retre-amount').value);
+
+    // Kache modal konfimasyon an
+    closeRetreConfirm();
+
+    try {
+        const transID = "RET-" + Date.now();
+        const user = auth.currentUser;
+
+        if (!user) {
+            alert("Ou dwe konekte pou fè retrè.");
+            return;
+        }
+
+        // A. Anrejistre tranzaksyon an nan Firebase
+        await set(ref(db, `transactions/${transID}`), {
+            uid: user.uid,
+            arsID: userData.arsID || "Pa gen ID",
+            fullname: userData.fullname || "Itilizatè",
+            type: "Retrè",
+            method: metod,
+            phone: tel,
+            receiver: non,
+            amount: montan,
+            status: "En attente",
+            timestamp: serverTimestamp()
+        });
+
+        // B. Montre Modal Siksè (Lordicon)
+        const successModal = document.getElementById('modal-success');
+        successModal.classList.remove('hidden');
+
+        // C. Netwaye bwat yo
+        document.getElementById('retre-name').value = "";
+        document.getElementById('retre-phone').value = "";
+        document.getElementById('retre-amount').value = "";
+
+        // D. Tann 5 segond epi tounen nan akey
+        setTimeout(() => {
+            successModal.classList.add('hidden');
+            // Si ou gen fonksyon showPage, nou rele l, sinon nou reload
+            if (typeof showPage === "function") {
+                showPage('paj-akey'); 
+            } else {
+                location.reload();
+            }
+        }, 5000);
+
+    } catch (e) {
+        alert("Erè: " + e.message);
+    }
+};
+        

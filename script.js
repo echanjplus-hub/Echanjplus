@@ -217,3 +217,34 @@ setInterval(() => {
     }
 }, 4000);
   
+
+
+// ==========================================
+// LOJIK CAROUSEL OTOMATIK (5 IMAJ)
+// ==========================================
+let currentIdx = 0;
+const slidesCount = 5;
+
+function runCarousel() {
+    const slider = document.getElementById('carousel-slider');
+    
+    // Nou tcheke si slider a egziste anvan nou kòmanse
+    if (!slider) return;
+
+    setInterval(() => {
+        currentIdx++;
+        
+        // Si nou rive nan fen, nou tounen nan 0
+        if (currentIdx >= slidesCount) {
+            currentIdx = 0;
+        }
+        
+        // Kalkile distans pou glise (0%, 20%, 40%, 60%, 80%)
+        let translateValue = currentIdx * 20; 
+        slider.style.transform = `translateX(-${translateValue}%)`;
+        
+    }, 4000); // 4 segonn
+}
+
+// Lanse fonksyon an
+runCarousel();

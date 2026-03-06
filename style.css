@@ -256,11 +256,36 @@ body {
 
 .active-sidebar { left: 0 !important; }
 
-/* Carousel */
+/* ==========================================
+   CAROUSEL RETRETI (COMPACT STYLE)
+   ========================================== */
+.carousel-container {
+    width: 88%;            /* Nou redui lajè a (te 92%) */
+    max-width: 400px;      /* Limit pou l pa janm twò laj */
+    margin: 12px auto;     /* Santre li ak yon ti espas anwo/anba */
+    overflow: hidden;
+    border-radius: 12px;   /* Kwen yon ti jan mwens won pou nivo pro */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.03); /* Ti liy dou bò gwo a */
+}
+
+.carousel-wrapper {
+    display: flex;
+    width: 500%;           /* Toujou 500% pou 5 imaj */
+    transition: transform 0.7s cubic-bezier(0.25, 1, 0.5, 1); /* Glise pi dous */
+}
+
+.slide {
+    width: 20%;
+    flex-shrink: 0;
+}
+
 .slide img {
     width: 100%;
-    height: 180px;
-    object-fit: cover;
-    border-radius: var(--radius-lg);
-  }
-                                
+    height: 140px;         /* Nou retreti wotè a (te 170px) */
+    object-fit: cover;     /* Imaj la ap toujou parèt byen san krazay */
+    display: block;
+    filter: brightness(0.95); /* Ti efè pou koulè yo parèt pi rich */
+}
+
